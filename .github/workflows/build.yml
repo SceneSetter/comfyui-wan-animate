@@ -32,5 +32,5 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/scenesetter/comfyui-wan-worker:v5
+          tags: ghcr.io/scenesetter/comfyui-wan-worker:v6
           platforms: linux/amd64

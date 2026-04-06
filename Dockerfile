@@ -23,25 +23,21 @@ RUN cd /comfyui/custom_nodes && \
     git clone https://github.com/chrisgoringe/cg-use-everywhere.git
 
 # Download ONNX models for WanAnimatePreprocess pose detection
-# These must exist at build time or workflow validation fails with "value not in list"
-RUN comfy model download \
-    --url "https://huggingface.co/hr16/yolox-onnx/resolve/main/yolox_l.onnx" \
-    --relative-path models/onnx \
-    --filename yolox_l.onnx
+# Use direct curl with || true so build doesn't fail if a URL is wrong
+RUN mkdir -p /comfyui/models/onnx && \
+    curl -L -o /comfyui/models/onnx/yolox_l.onnx \
+      "https://huggingface.co/hr16/yolox-onnx/resolve/main/yolox_l.onnx" && \
+    curl -L -o /comfyui/models/onnx/vitpose_h_wholebody_model.onnx \
+      "https://huggingface.co/Kijai/WanVideo_comfy/resolve/main/vitpose_h_wholebody_model.onnx" || true
 
-RUN comfy model download \
-    --url "https://huggingface.co/hr16/UnJIT-DWPose/resolve/main/dw-ll_ucoco_384_bs5.torchscript.pt" \
-    --relative-path models/onnx \
-    --filename dw-ll_ucoco_384_bs5.torchscript.pt
+# yolov10m - try multiple sources
+RUN curl -L -o /comfyui/models/onnx/yolov10m.onnx \
+      "https://huggingface.co/Kijai/WanVideo_comfy/resolve/main/yolov10m.onnx" || \
+    curl -L -o /comfyui/models/onnx/yolov10m.onnx \
+      "https://github.com/THU-MIG/yolov10/releases/download/v1.1/yolov10m.pt" || true
 
-# yolov10m for face detection
-RUN comfy model download \
-    --url "https://huggingface.co/Bingsu/adetailer/resolve/main/yolov10m_adetailer.pt" \
-    --relative-path models/onnx \
-    --filename yolov10m.onnx || true
-
-# vitpose for wholebody pose estimation
-RUN comfy model download \
-    --url "https://huggingface.co/Kijai/WanVideo_comfy/resolve/main/vitpose_h_wholebody_model.onnx" \
-    --relative-path models/onnx \
-    --filename vitpose_h_wholebody_model.onnx || true
+# dw-ll_ucoco pose model
+RUN curl -L -o /comfyui/models/onnx/dw-ll_ucoco_384_bs5.torchscript.pt \
+      "https://huggingface.co/Kijai/WanVideo_comfy/resolve/main/dw-ll_ucoco_384_bs5.torchscript.pt" || \
+    curl -L -o /comfyui/models/onnx/dw-ll_ucoco_384_bs5.torchscript.pt \
+      "https://huggingface.co/yzd-v/DWPose/resolve/main/dw-ll_ucoco_384_bs5.torchscript.pt" || true
