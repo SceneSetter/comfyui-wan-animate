@@ -18,16 +18,30 @@ RUN cd /comfyui/custom_nodes && \
     cd ComfyUI-VideoHelperSuite && \
     /opt/venv/bin/pip install -r requirements.txt || true
 
-# SetNode/GetNode used for data routing in the workflow
+# SetNode/GetNode virtual node support
 RUN cd /comfyui/custom_nodes && \
     git clone https://github.com/chrisgoringe/cg-use-everywhere.git
 
-# Download required ONNX models for pose detection
-RUN mkdir -p /comfyui/models/onnx && \
-    curl -L -o /comfyui/models/onnx/yolov10m.onnx \
-      "https://huggingface.co/Bingsu/adetailer/resolve/main/yolov10m.pt" || \
-    curl -L -o /comfyui/models/onnx/yolov10m.onnx \
-      "https://github.com/akanametov/yolo-face/releases/download/v0.0.0/yolov10m.onnx" || true
+# Download ONNX models for WanAnimatePreprocess pose detection
+# These must exist at build time or workflow validation fails with "value not in list"
+RUN comfy model download \
+    --url "https://huggingface.co/hr16/yolox-onnx/resolve/main/yolox_l.onnx" \
+    --relative-path models/onnx \
+    --filename yolox_l.onnx
 
-RUN curl -L -o /comfyui/models/onnx/vitpose_h_wholebody_model.onnx \
-      "https://huggingface.co/nicehuster/vitpose_wholebody/resolve/main/vitpose-h-wholebody.onnx" || true
+RUN comfy model download \
+    --url "https://huggingface.co/hr16/UnJIT-DWPose/resolve/main/dw-ll_ucoco_384_bs5.torchscript.pt" \
+    --relative-path models/onnx \
+    --filename dw-ll_ucoco_384_bs5.torchscript.pt
+
+# yolov10m for face detection
+RUN comfy model download \
+    --url "https://huggingface.co/Bingsu/adetailer/resolve/main/yolov10m_adetailer.pt" \
+    --relative-path models/onnx \
+    --filename yolov10m.onnx || true
+
+# vitpose for wholebody pose estimation
+RUN comfy model download \
+    --url "https://huggingface.co/Kijai/WanVideo_comfy/resolve/main/vitpose_h_wholebody_model.onnx" \
+    --relative-path models/onnx \
+    --filename vitpose_h_wholebody_model.onnx || true
