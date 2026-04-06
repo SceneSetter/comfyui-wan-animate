@@ -1,6 +1,6 @@
 FROM runpod/worker-comfyui:5.8.5-base
 
-# Install custom nodes that work via comfy-node-install
+# Install custom nodes via comfy-node-install
 RUN comfy-node-install \
     ComfyUI-WanVideoWrapper \
     ComfyUI-WanAnimatePreprocess \
@@ -17,3 +17,7 @@ RUN cd /comfyui/custom_nodes && \
     git clone https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git && \
     cd ComfyUI-VideoHelperSuite && \
     /opt/venv/bin/pip install -r requirements.txt || true
+
+# SetNode/GetNode used for data routing in the workflow
+RUN cd /comfyui/custom_nodes && \
+    git clone https://github.com/chrisgoringe/cg-use-everywhere.git
